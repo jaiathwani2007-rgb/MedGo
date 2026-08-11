@@ -10,7 +10,7 @@ export async function login(formData: FormData) {
 
   // Convert username to a safe email format for Supabase Auth
   const safeUsername = username.toLowerCase().replace(/[^a-z0-9]/g, '')
-  const formattedEmail = `${safeUsername}@medgo.local`
+  const formattedEmail = `${safeUsername}@medgo.com`
 
   const { error } = await supabase.auth.signInWithPassword({
     email: formattedEmail,
@@ -39,7 +39,7 @@ export async function signup(formData: FormData) {
   const supabase = await createClient()
 
   const safeUsername = username.toLowerCase().replace(/[^a-z0-9]/g, '')
-  const formattedEmail = `${safeUsername}@medgo.local`
+  const formattedEmail = `${safeUsername}@medgo.com`
 
   const { error } = await supabase.auth.signUp({
     email: formattedEmail,
