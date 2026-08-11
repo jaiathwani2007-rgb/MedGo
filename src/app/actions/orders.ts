@@ -78,7 +78,7 @@ export async function getAdminOrders() {
       *,
       profiles(full_name, phone_number),
       addresses(address_text),
-      order_items(quantity, price_at_time, medicine_name)
+      order_items(id, quantity, price_at_time, medicine_name)
     `)
     .order('created_at', { ascending: false })
   
@@ -165,6 +165,55 @@ export async function setOutForDelivery(orderId: string) {
 
   if (error) return { error: error.message }
   return { success: true }
+}
+
+// Helper to recalculate order total
+async function recalculateOrderTotal(orderId: string, supabase: any) {
+  const { data: items } = await supabase.from('order_items').select('quantity, price_at_time').eq('order_id', orderId)
+  const subtotal = (items || []).reduce((sum: number, item: any) => sum + (item.price_at_time * item.quantity), 0)
+  
+  const { data: rules } = await supabase.from('delivery_charge_rules').select('*').single()
+  const minFree = rules?.min_order_value_for_free_delivery || 500
+  const flatFee = rules?.flat_delivery_fee || 50
+  const delivery_fee = (subtotal === 0 || subtotal >= minFree) ? 0 : flatFee
+  const total = subtotal + delivery_fee
+
+  await supabase.from('orders').update({ subtotal, delivery_fee, total }).eq('id', orderId)
+}
+
+export async function addMedicineToOrder(orderId: string, medicineId: string, quantity: number) {
+  const cookieStore = await cookies()
+  const adminAuth = cookieStore.get('admin_auth')?.value
+  if (adminAuth !== 'true') throw new Error('Unauthorized')
+
+  const adminClient = createAdminClient()
+  
+  // Get medicine price
+  const { data: med } = await adminClient.from('medicines').select('name, price').eq('id', medicineId).single()
+  if (!med) throw new Error('Medicine not found')
+
+  await adminClient.from('order_items').insert({
+    order_id: orderId,
+    medicine_id: medicineId,
+    medicine_name: med.name,
+    quantity,
+    price_at_time: med.price
+  })
+
+  await recalculateOrderTotal(orderId, adminClient)
+  revalidatePath('/admin/orders')
+}
+
+export async function removeMedicineFromOrder(orderId: string, itemId: string) {
+  const cookieStore = await cookies()
+  const adminAuth = cookieStore.get('admin_auth')?.value
+  if (adminAuth !== 'true') throw new Error('Unauthorized')
+
+  const adminClient = createAdminClient()
+  await adminClient.from('order_items').delete().eq('id', itemId).eq('order_id', orderId)
+  
+  await recalculateOrderTotal(orderId, adminClient)
+  revalidatePath('/admin/orders')
 }
 
 export async function completeDelivery(orderId: string, inputOtp: string) {

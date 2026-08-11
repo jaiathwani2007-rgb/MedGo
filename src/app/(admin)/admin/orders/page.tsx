@@ -3,6 +3,7 @@ import { verifyUpiPayment } from '@/app/actions/payments'
 import { SubmitButton } from '@/components/SubmitButton'
 import { revalidatePath } from 'next/cache'
 import { CheckCircle, XCircle } from 'lucide-react'
+import { AdminOrderItemEditor } from '@/components/AdminOrderItemEditor'
 
 import { OrderRealtimeUpdater } from '@/components/OrderRealtimeUpdater'
 
@@ -81,19 +82,28 @@ export default async function AdminOrdersPage() {
                 </div>
               )}
               
-              <h4 className="text-sm font-medium text-gray-400 mb-2">Items</h4>
-              <ul className="space-y-1 mb-4">
-                {order.order_items.map((item: any, idx: number) => (
-                  <li key={idx} className="flex justify-between text-sm text-gray-300">
-                    <span>{item.quantity}x {item.medicine_name}</span>
-                    <span>₹{(item.price_at_time * item.quantity).toFixed(2)}</span>
-                  </li>
-                ))}
-              </ul>
+              {order.status === 'pending_verification' ? (
+                <AdminOrderItemEditor orderId={order.id} currentItems={order.order_items} />
+              ) : (
+                <>
+                  <h4 className="text-sm font-medium text-gray-400 mb-2">Items</h4>
+                  <ul className="space-y-1 mb-4">
+                    {order.order_items.map((item: any, idx: number) => (
+                      <li key={idx} className="flex justify-between text-sm text-gray-300">
+                        <span>{item.quantity}x {item.medicine_name}</span>
+                        <span>₹{(item.price_at_time * item.quantity).toFixed(2)}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              )}
               
-              <div className="flex justify-between text-lg font-bold border-t border-gray-700 pt-3 text-white mb-6">
-                <span>Total</span>
-                <span>₹{order.total.toFixed(2)}</span>
+              <div className="flex justify-between items-end border-t border-gray-700 pt-3 text-white mb-6">
+                <div>
+                  <div className="text-sm text-gray-400">Subtotal: ₹{order.subtotal.toFixed(2)}</div>
+                  <div className="text-sm text-gray-400">Delivery: {order.delivery_fee === 0 ? 'Free' : `₹${order.delivery_fee.toFixed(2)}`}</div>
+                </div>
+                <div className="text-xl font-bold">Total: ₹{order.total.toFixed(2)}</div>
               </div>
 
               {order.status === 'pending_verification' && (
