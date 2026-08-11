@@ -1,0 +1,86 @@
+'use server'
+
+import { createClient } from '@/utils/supabase/server'
+import { redirect } from 'next/navigation'
+
+export async function login(formData: FormData) {
+  const phone = formData.get('phone') as string
+  const password = formData.get('password') as string
+  const supabase = await createClient()
+
+  // Ensure phone has country code for Supabase Auth, assuming India (+91) if not provided
+  const formattedPhone = phone.startsWith('+') ? phone : `+91${phone}`
+
+  const { error } = await supabase.auth.signInWithPassword({
+    phone: formattedPhone,
+    password,
+  })
+
+  if (error) {
+    return { error: error.message }
+  }
+
+  // Check if profile is complete
+  const { data: { user } } = await supabase.auth.getUser()
+  if (user) {
+    const { data: profile } = await supabase.from('profiles').select('full_name').eq('id', user.id).single()
+    if (!profile?.full_name) {
+      redirect('/onboarding')
+    }
+  }
+
+  redirect('/')
+}
+
+export async function signup(formData: FormData) {
+  const phone = formData.get('phone') as string
+  const password = formData.get('password') as string
+  const supabase = await createClient()
+
+  const formattedPhone = phone.startsWith('+') ? phone : `+91${phone}`
+
+  const { error } = await supabase.auth.signUp({
+    phone: formattedPhone,
+    password,
+  })
+
+  if (error) {
+    return { error: error.message }
+  }
+
+  // After successful signup, redirect to onboarding
+  redirect('/onboarding')
+}
+
+export async function completeOnboarding(formData: FormData) {
+  const fullName = formData.get('fullName') as string
+  const age = parseInt(formData.get('age') as string, 10)
+  const address = formData.get('address') as string
+  const language = formData.get('language') as string
+  const supabase = await createClient()
+
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    return { error: 'Not authenticated' }
+  }
+
+  // Update profile
+  const { error: profileError } = await supabase.from('profiles').update({
+    full_name: fullName,
+    age: age,
+    language_preference: language,
+  }).eq('id', user.id)
+
+  if (profileError) return { error: profileError.message }
+
+  // Insert address
+  const { error: addressError } = await supabase.from('addresses').insert({
+    profile_id: user.id,
+    address_text: address,
+    is_default: true,
+  })
+
+  if (addressError) return { error: addressError.message }
+
+  redirect('/')
+}
