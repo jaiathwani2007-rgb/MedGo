@@ -4,15 +4,16 @@ import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 
 export async function login(formData: FormData) {
-  const phone = formData.get('phone') as string
+  const username = formData.get('username') as string
   const password = formData.get('password') as string
   const supabase = await createClient()
 
-  // Ensure phone has country code for Supabase Auth, assuming India (+91) if not provided
-  const formattedPhone = phone.startsWith('+') ? phone : `+91${phone}`
+  // Convert username to a safe email format for Supabase Auth
+  const safeUsername = username.toLowerCase().replace(/[^a-z0-9]/g, '')
+  const formattedEmail = `${safeUsername}@medgo.local`
 
   const { error } = await supabase.auth.signInWithPassword({
-    phone: formattedPhone,
+    email: formattedEmail,
     password,
   })
 
@@ -33,14 +34,15 @@ export async function login(formData: FormData) {
 }
 
 export async function signup(formData: FormData) {
-  const phone = formData.get('phone') as string
+  const username = formData.get('username') as string
   const password = formData.get('password') as string
   const supabase = await createClient()
 
-  const formattedPhone = phone.startsWith('+') ? phone : `+91${phone}`
+  const safeUsername = username.toLowerCase().replace(/[^a-z0-9]/g, '')
+  const formattedEmail = `${safeUsername}@medgo.local`
 
   const { error } = await supabase.auth.signUp({
-    phone: formattedPhone,
+    email: formattedEmail,
     password,
   })
 

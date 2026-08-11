@@ -37,17 +37,17 @@ export default function SignupPage() {
 
         <form action={handleSignup} className="space-y-5">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">{t('login.phone')}</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Patient Name (Username)</label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Phone className="h-5 w-5 text-gray-400" />
+                <HeartPulse className="h-5 w-5 text-gray-400" />
               </div>
               <input
-                type="tel"
-                name="phone"
+                type="text"
+                name="username"
                 required
-                placeholder="10-digit mobile number"
-                className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow bg-gray-50 focus:bg-white"
+                placeholder="e.g. johndoe"
+                className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow bg-gray-50 focus:bg-white text-gray-900 placeholder-gray-400"
               />
             </div>
           </div>
@@ -63,7 +63,7 @@ export default function SignupPage() {
                 name="password"
                 required
                 placeholder="••••••••"
-                className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow bg-gray-50 focus:bg-white"
+                className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow bg-gray-50 focus:bg-white text-gray-900 placeholder-gray-400"
               />
             </div>
           </div>
