@@ -5,6 +5,7 @@ import { createAdminClient } from '@/utils/supabase/admin'
 import { type CartItem } from '@/components/CartProvider'
 import { cookies } from 'next/headers'
 import { getSession } from '@/utils/session'
+import { revalidatePath } from 'next/cache'
 
 export async function submitOrder(cartItems: CartItem[], prescriptionPath?: string | null, subscribe?: boolean) {
   const userId = await getSession()
