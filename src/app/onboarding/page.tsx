@@ -1,14 +1,44 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { completeOnboarding } from '@/app/actions/auth'
 import { useLanguage } from '@/components/LanguageProvider'
 import { SubmitButton } from '@/components/SubmitButton'
-import { User, Calendar, MapPin, Globe } from 'lucide-react'
+import { User, Calendar, MapPin, Globe, Loader2 } from 'lucide-react'
 
 export default function OnboardingPage() {
   const { t, language, setLanguage } = useLanguage()
   const [error, setError] = useState<string | null>(null)
+  const [detecting, setDetecting] = useState(false)
+  const addressInputRef = useRef<HTMLTextAreaElement>(null)
+
+  const handleDetectLocation = () => {
+    if (!navigator.geolocation) {
+      alert('Geolocation is not supported by your browser')
+      return
+    }
+    setDetecting(true)
+    navigator.geolocation.getCurrentPosition(async (position) => {
+      try {
+        const { latitude, longitude } = position.coords
+        // Using Nominatim API (Free, no key required) for reverse geocoding
+        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`)
+        const data = await res.json()
+        if (data && data.display_name && addressInputRef.current) {
+          addressInputRef.current.value = data.display_name
+        } else {
+          alert('Could not determine address from coordinates.')
+        }
+      } catch (err) {
+        alert('Failed to detect location.')
+      } finally {
+        setDetecting(false)
+      }
+    }, () => {
+      alert('Location access denied.')
+      setDetecting(false)
+    })
+  }
 
   async function handleOnboarding(formData: FormData) {
     const result = await completeOnboarding(formData)
@@ -42,7 +72,7 @@ export default function OnboardingPage() {
                 type="text"
                 name="fullName"
                 required
-                className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow bg-gray-50 focus:bg-white"
+                className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow bg-gray-50 focus:bg-white text-black font-semibold placeholder-gray-500"
               />
             </div>
           </div>
@@ -59,22 +89,29 @@ export default function OnboardingPage() {
                 required
                 min="18"
                 max="120"
-                className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow bg-gray-50 focus:bg-white"
+                className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow bg-gray-50 focus:bg-white text-black font-semibold placeholder-gray-500"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">{t('onboarding.address')}</label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-sm font-medium text-gray-700">{t('onboarding.address')}</label>
+              <button type="button" onClick={handleDetectLocation} disabled={detecting} className="text-xs text-blue-600 hover:text-blue-700 flex items-center font-medium">
+                {detecting ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <MapPin className="w-3 h-3 mr-1" />}
+                Auto Detect Location
+              </button>
+            </div>
             <div className="relative">
               <div className="absolute top-3 left-3 flex items-start pointer-events-none">
                 <MapPin className="h-5 w-5 text-gray-400" />
               </div>
               <textarea
                 name="address"
+                ref={addressInputRef}
                 required
                 rows={3}
-                className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow bg-gray-50 focus:bg-white resize-none"
+                className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow bg-gray-50 focus:bg-white resize-none text-black font-semibold placeholder-gray-500"
               ></textarea>
             </div>
           </div>

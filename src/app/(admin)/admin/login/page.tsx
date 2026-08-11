@@ -43,7 +43,7 @@ export default function AdminLoginPage() {
                 type="password"
                 name="password"
                 required
-                className="block w-full pl-10 pr-3 py-3 border border-gray-600 rounded-xl bg-gray-700 text-white placeholder-gray-400 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-shadow"
+                className="block w-full pl-10 pr-3 py-3 border border-gray-700 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-shadow bg-gray-900 focus:bg-gray-800 text-white font-semibold placeholder-gray-400"
                 placeholder="••••••••"
               />
             </div>

@@ -47,7 +47,7 @@ export default function SignupPage() {
                 name="username"
                 required
                 placeholder="e.g. johndoe"
-                className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow bg-gray-50 focus:bg-white text-gray-900 placeholder-gray-400"
+                className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow bg-gray-50 focus:bg-white text-black font-semibold placeholder-gray-500"
               />
             </div>
           </div>
@@ -63,7 +63,7 @@ export default function SignupPage() {
                 name="password"
                 required
                 placeholder="••••••••"
-                className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow bg-gray-50 focus:bg-white text-gray-900 placeholder-gray-400"
+                className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow bg-gray-50 focus:bg-white text-black font-semibold placeholder-gray-500"
               />
             </div>
           </div>
