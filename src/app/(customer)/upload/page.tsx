@@ -2,15 +2,23 @@
 
 import { CameraCapture } from '@/components/CameraCapture'
 import { useRouter } from 'next/navigation'
+import { submitOrder } from '@/app/actions/orders'
 
 export default function UploadPage() {
   const router = useRouter()
 
-  const handleUploadComplete = (path: string) => {
-    // Navigate to cart or somewhere to continue order.
-    // For now, just alert and redirect home.
-    alert('Upload successful! Path: ' + path)
-    router.push('/')
+  const handleUploadComplete = async (path: string) => {
+    try {
+      const res = await submitOrder([], path, false)
+      if (res?.error) {
+        alert(res.error)
+      } else {
+        alert('Prescription uploaded successfully! The pharmacist will review it shortly.')
+        router.push('/orders')
+      }
+    } catch (err) {
+      alert('An error occurred while submitting.')
+    }
   }
 
   return (

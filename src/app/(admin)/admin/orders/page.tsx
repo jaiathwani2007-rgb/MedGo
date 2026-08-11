@@ -62,6 +62,25 @@ export default async function AdminOrdersPage() {
             </div>
             
             <div className="p-4">
+              {order.prescription_uploads && order.prescription_uploads.length > 0 && (
+                <div className="mb-4 bg-gray-900 p-3 rounded-lg border border-blue-900/30">
+                  <h4 className="text-sm font-medium text-blue-400 mb-2">Prescription Attached</h4>
+                  <div className="flex gap-2 flex-wrap">
+                    {order.prescription_uploads.map((upload: any, idx: number) => (
+                      <a 
+                        key={idx} 
+                        href={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/prescriptions/${upload.storage_path}`} 
+                        target="_blank" 
+                        rel="noreferrer" 
+                        className="text-xs bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded flex items-center gap-1 transition-colors"
+                      >
+                        View Prescription {idx + 1}
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
               <h4 className="text-sm font-medium text-gray-400 mb-2">Items</h4>
               <ul className="space-y-1 mb-4">
                 {order.order_items.map((item: any, idx: number) => (

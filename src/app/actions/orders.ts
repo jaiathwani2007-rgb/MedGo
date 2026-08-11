@@ -75,7 +75,8 @@ export async function getAdminOrders() {
       *,
       profiles(full_name, phone_number),
       addresses(address_text),
-      order_items(quantity, price_at_time, medicine_name)
+      order_items(quantity, price_at_time, medicine_name),
+      prescription_uploads(storage_path)
     `)
     .order('created_at', { ascending: false })
   
