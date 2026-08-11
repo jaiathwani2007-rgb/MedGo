@@ -4,13 +4,14 @@ import { createClient } from '@/utils/supabase/server'
 import { createAdminClient } from '@/utils/supabase/admin'
 import { type CartItem } from '@/components/CartProvider'
 import { cookies } from 'next/headers'
+import { getSession } from '@/utils/session'
 
 export async function submitOrder(cartItems: CartItem[], prescriptionPath?: string | null, subscribe?: boolean) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { error: 'Not logged in' }
+  const userId = await getSession()
+  if (!userId) return { error: 'Not logged in' }
 
-  const { data: address } = await supabase.from('addresses').select('id').eq('profile_id', user.id).limit(1).single()
+  const supabase = createAdminClient()
+  const { data: address } = await supabase.from('addresses').select('id').eq('profile_id', userId).limit(1).single()
   if (!address) return { error: 'No delivery address found on your profile.' }
   const addressId = address.id
 
@@ -23,7 +24,7 @@ export async function submitOrder(cartItems: CartItem[], prescriptionPath?: stri
   const total = subtotal + delivery_fee
 
   const { data: order, error: orderError } = await supabase.from('orders').insert({
-    profile_id: user.id,
+    profile_id: userId,
     address_id: addressId,
     subtotal,
     delivery_fee,
@@ -52,7 +53,7 @@ export async function submitOrder(cartItems: CartItem[], prescriptionPath?: stri
     const nextRefillDate = new Date()
     nextRefillDate.setDate(nextRefillDate.getDate() + 30)
     await supabase.from('subscriptions').insert({
-      profile_id: user.id,
+      profile_id: userId,
       original_order_id: order.id,
       frequency_days: 30,
       next_refill_date: nextRefillDate.toISOString().split('T')[0]
@@ -97,21 +98,27 @@ export async function updateOrderStatus(orderId: string, status: string, note?: 
 }
 
 export async function getMyOrders() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return []
+  const userId = await getSession()
+  if (!userId) return []
 
+  const supabase = createAdminClient()
   const { data, error } = await supabase
     .from('orders')
     .select('id, created_at, status, total, order_items(medicine_name, quantity)')
-    .eq('profile_id', user.id)
+    .eq('profile_id', userId)
     .order('created_at', { ascending: false })
   
   if (error) {
-    console.error(error)
-    return []
+    console.error('Error fetching orders:', error)
   }
-  return data
+  return data || []
+}
+
+export async function savePrescriptionUpload(filePath: string) {
+  const userId = await getSession()
+  if (!userId) throw new Error('Not authenticated')
+  const supabase = createAdminClient()
+  await supabase.from('prescription_uploads').insert({ profile_id: userId, storage_path: filePath })
 }
 
 export async function setOutForDelivery(orderId: string) {

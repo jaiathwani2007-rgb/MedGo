@@ -1,6 +1,6 @@
 'use server'
 
-import { createClient } from '@/utils/supabase/server'
+import { createAdminClient } from '@/utils/supabase/admin'
 import { type Medicine } from './catalog'
 
 export async function analyzeSymptoms(symptomText: string): Promise<{
@@ -8,7 +8,7 @@ export async function analyzeSymptoms(symptomText: string): Promise<{
   matchedKeyword?: string,
   suggestedMedicines?: Medicine[]
 }> {
-  const supabase = await createClient()
+  const supabase = createAdminClient()
   
   // 1. Fetch all red flag keywords
   const { data: keywordsData } = await supabase.from('red_flag_keywords').select('keyword')

@@ -2,6 +2,7 @@
 
 import { useState, useRef } from 'react'
 import { createClient } from '@/utils/supabase/client'
+import { savePrescriptionUpload } from '@/app/actions/orders'
 import { Camera, Upload, X, Loader2 } from 'lucide-react'
 
 // Quick helper to calculate Laplacian Variance for blur detection
@@ -102,17 +103,11 @@ export function CameraCapture({ onUploadComplete }: { onUploadComplete: (path: s
     setError(null)
     
     const supabase = createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    
-    if (!user) {
-      setError('You must be logged in to upload a prescription.')
-      setUploading(false)
-      return
-    }
 
     const fileExt = file.name.split('.').pop()
+    const folderId = Math.random().toString(36).substring(2, 10)
     const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`
-    const filePath = `${user.id}/${fileName}`
+    const filePath = `${folderId}/${fileName}`
 
     const { error: uploadError } = await supabase.storage
       .from('prescriptions')
@@ -124,13 +119,10 @@ export function CameraCapture({ onUploadComplete }: { onUploadComplete: (path: s
       return
     }
 
-    // Save record to prescription_uploads
-    const { error: dbError } = await supabase.from('prescription_uploads').insert({
-      profile_id: user.id,
-      storage_path: filePath
-    })
-
-    if (dbError) {
+    // Save record securely via server action
+    try {
+      await savePrescriptionUpload(filePath)
+    } catch (dbError: any) {
       setError(dbError.message)
       setUploading(false)
       return

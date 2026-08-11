@@ -2,12 +2,14 @@
 
 import { createClient } from '@/utils/supabase/server'
 import { createAdminClient } from '@/utils/supabase/admin'
+import { getSession } from '@/utils/session'
 import { cookies } from 'next/headers'
 
 export async function submitPayment(orderId: string, method: 'COD' | 'UPI', reference?: string) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { error: 'Not logged in' }
+  const userId = await getSession()
+  if (!userId) return { error: 'Not logged in' }
+
+  const supabase = createAdminClient()
 
   const updates: any = { payment_method: method }
 
@@ -22,7 +24,7 @@ export async function submitPayment(orderId: string, method: 'COD' | 'UPI', refe
 
   updates.updated_at = new Date().toISOString()
 
-  const { error } = await supabase.from('orders').update(updates).eq('id', orderId).eq('profile_id', user.id)
+  const { error } = await supabase.from('orders').update(updates).eq('id', orderId).eq('profile_id', userId)
   if (error) return { error: error.message }
   return { success: true }
 }

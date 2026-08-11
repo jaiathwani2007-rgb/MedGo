@@ -1,13 +1,12 @@
 import Link from 'next/link'
 import { Pill, FileText, Stethoscope, ArrowRight } from 'lucide-react'
-import { createClient } from '@/utils/supabase/server'
+import { getSession } from '@/utils/session'
 import { redirect } from 'next/navigation'
 
 export default async function CustomerHome() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const userId = await getSession()
 
-  if (!user) {
+  if (!userId) {
     redirect('/login')
   }
   return (

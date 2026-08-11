@@ -1,6 +1,5 @@
 'use server'
 
-import { createClient } from '@/utils/supabase/server'
 import { createAdminClient } from '@/utils/supabase/admin'
 import { cookies } from 'next/headers'
 
@@ -19,7 +18,7 @@ export type Medicine = {
 
 // Public: Fetch catalog with optional search query
 export async function getCatalog(query: string = '') {
-  const supabase = await createClient()
+  const supabase = createAdminClient()
   
   let dbQuery = supabase.from('medicines').select('*').order('name')
   

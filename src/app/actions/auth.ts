@@ -1,33 +1,37 @@
 'use server'
 
-import { createClient } from '@/utils/supabase/server'
+import { createAdminClient } from '@/utils/supabase/admin'
 import { redirect } from 'next/navigation'
+import bcrypt from 'bcryptjs'
+import { setSession, getSession, clearSession } from '@/utils/session'
 
 export async function login(formData: FormData) {
   const username = formData.get('username') as string
   const password = formData.get('password') as string
-  const supabase = await createClient()
+  const supabase = createAdminClient()
 
-  // Convert username to a safe email format for Supabase Auth
-  const safeUsername = username.toLowerCase().replace(/[^a-z0-9]/g, '')
-  const formattedEmail = `${safeUsername}@medgo.com`
+  // Find user by username
+  const { data: profile, error } = await supabase
+    .from('profiles')
+    .select('id, password_hash, full_name')
+    .eq('username', username.toLowerCase().trim())
+    .single()
 
-  const { error } = await supabase.auth.signInWithPassword({
-    email: formattedEmail,
-    password,
-  })
-
-  if (error) {
-    return { error: error.message }
+  if (error || !profile) {
+    return { error: 'Invalid username or password' }
   }
 
-  // Check if profile is complete
-  const { data: { user } } = await supabase.auth.getUser()
-  if (user) {
-    const { data: profile } = await supabase.from('profiles').select('full_name').eq('id', user.id).single()
-    if (!profile?.full_name) {
-      redirect('/onboarding')
-    }
+  // Compare passwords
+  const match = await bcrypt.compare(password, profile.password_hash)
+  if (!match) {
+    return { error: 'Invalid username or password' }
+  }
+
+  // Login successful
+  await setSession(profile.id)
+
+  if (!profile.full_name) {
+    redirect('/onboarding')
   }
 
   redirect('/')
@@ -36,21 +40,30 @@ export async function login(formData: FormData) {
 export async function signup(formData: FormData) {
   const username = formData.get('username') as string
   const password = formData.get('password') as string
-  const supabase = await createClient()
+  const supabase = createAdminClient()
 
-  const safeUsername = username.toLowerCase().replace(/[^a-z0-9]/g, '')
-  const formattedEmail = `${safeUsername}@medgo.com`
+  const safeUsername = username.toLowerCase().trim()
 
-  const { error } = await supabase.auth.signUp({
-    email: formattedEmail,
-    password,
-  })
-
-  if (error) {
-    return { error: error.message }
+  // Check if username exists
+  const { data: existing } = await supabase.from('profiles').select('id').eq('username', safeUsername).single()
+  if (existing) {
+    return { error: 'Username already taken' }
   }
 
-  // After successful signup, redirect to onboarding
+  // Hash password
+  const passwordHash = await bcrypt.hash(password, 10)
+
+  // Insert profile (since id is auto-generated)
+  const { data: profile, error } = await supabase.from('profiles').insert({
+    username: safeUsername,
+    password_hash: passwordHash,
+  }).select('id').single()
+
+  if (error || !profile) {
+    return { error: error?.message || 'Failed to create account' }
+  }
+
+  await setSession(profile.id)
   redirect('/onboarding')
 }
 
@@ -59,10 +72,10 @@ export async function completeOnboarding(formData: FormData) {
   const age = parseInt(formData.get('age') as string, 10)
   const address = formData.get('address') as string
   const language = formData.get('language') as string
-  const supabase = await createClient()
+  const supabase = createAdminClient()
 
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) {
+  const userId = await getSession()
+  if (!userId) {
     return { error: 'Not authenticated' }
   }
 
@@ -71,13 +84,13 @@ export async function completeOnboarding(formData: FormData) {
     full_name: fullName,
     age: age,
     language_preference: language,
-  }).eq('id', user.id)
+  }).eq('id', userId)
 
   if (profileError) return { error: profileError.message }
 
   // Insert address
   const { error: addressError } = await supabase.from('addresses').insert({
-    profile_id: user.id,
+    profile_id: userId,
     address_text: address,
     is_default: true,
   })
@@ -85,4 +98,9 @@ export async function completeOnboarding(formData: FormData) {
   if (addressError) return { error: addressError.message }
 
   redirect('/')
+}
+
+export async function logout() {
+  await clearSession()
+  redirect('/login')
 }
