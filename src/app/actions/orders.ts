@@ -169,16 +169,21 @@ export async function setOutForDelivery(orderId: string) {
 
 // Helper to recalculate order total
 async function recalculateOrderTotal(orderId: string, supabase: any) {
-  const { data: items } = await supabase.from('order_items').select('quantity, price_at_time').eq('order_id', orderId)
+  const { data: items, error: itemsError } = await supabase.from('order_items').select('quantity, price_at_time').eq('order_id', orderId)
+  if (itemsError) throw new Error(`Fetch items error: ${itemsError.message}`)
+
   const subtotal = (items || []).reduce((sum: number, item: any) => sum + (item.price_at_time * item.quantity), 0)
   
-  const { data: rules } = await supabase.from('delivery_charge_rules').select('*').single()
+  const { data: rules, error: rulesError } = await supabase.from('delivery_charge_rules').select('*').single()
+  if (rulesError) throw new Error(`Fetch rules error: ${rulesError.message}`)
+
   const minFree = rules?.min_order_value_for_free_delivery || 500
   const flatFee = rules?.flat_delivery_fee || 50
   const delivery_fee = (subtotal === 0 || subtotal >= minFree) ? 0 : flatFee
   const total = subtotal + delivery_fee
 
-  await supabase.from('orders').update({ subtotal, delivery_fee, total }).eq('id', orderId)
+  const { error: updateError } = await supabase.from('orders').update({ subtotal, delivery_fee, total }).eq('id', orderId)
+  if (updateError) throw new Error(`Update order error: ${updateError.message}`)
 }
 
 export async function addMedicineToOrder(orderId: string, medicineId: string, quantity: number) {
@@ -189,16 +194,17 @@ export async function addMedicineToOrder(orderId: string, medicineId: string, qu
   const adminClient = createAdminClient()
   
   // Get medicine price
-  const { data: med } = await adminClient.from('medicines').select('name, price').eq('id', medicineId).single()
-  if (!med) throw new Error('Medicine not found')
+  const { data: med, error: medError } = await adminClient.from('medicines').select('name, price').eq('id', medicineId).single()
+  if (medError || !med) throw new Error(`Medicine not found: ${medError?.message}`)
 
-  await adminClient.from('order_items').insert({
+  const { error: insertError } = await adminClient.from('order_items').insert({
     order_id: orderId,
     medicine_id: medicineId,
     medicine_name: med.name,
     quantity,
     price_at_time: med.price
   })
+  if (insertError) throw new Error(`Insert error: ${insertError.message}`)
 
   await recalculateOrderTotal(orderId, adminClient)
   revalidatePath('/admin/orders')
@@ -211,13 +217,14 @@ export async function addCustomMedicineToOrder(orderId: string, name: string, pr
 
   const adminClient = createAdminClient()
   
-  await adminClient.from('order_items').insert({
+  const { error: insertError } = await adminClient.from('order_items').insert({
     order_id: orderId,
     medicine_id: null,
     medicine_name: name,
     quantity,
     price_at_time: price
   })
+  if (insertError) throw new Error(`Insert error: ${insertError.message}`)
 
   await recalculateOrderTotal(orderId, adminClient)
   revalidatePath('/admin/orders')
@@ -229,7 +236,8 @@ export async function removeMedicineFromOrder(orderId: string, itemId: string) {
   if (adminAuth !== 'true') throw new Error('Unauthorized')
 
   const adminClient = createAdminClient()
-  await adminClient.from('order_items').delete().eq('id', itemId).eq('order_id', orderId)
+  const { error: deleteError } = await adminClient.from('order_items').delete().eq('id', itemId).eq('order_id', orderId)
+  if (deleteError) throw new Error(`Delete error: ${deleteError.message}`)
   
   await recalculateOrderTotal(orderId, adminClient)
   revalidatePath('/admin/orders')
