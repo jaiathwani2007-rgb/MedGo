@@ -20,7 +20,10 @@ export async function submitOrder(cartItems: CartItem[], prescriptionPath?: stri
   const { data: rules } = await supabase.from('delivery_charge_rules').select('*').single()
   const minFree = rules?.min_order_value_for_free_delivery || 500
   const flatFee = rules?.flat_delivery_fee || 50
-  const delivery_fee = subtotal >= minFree ? 0 : flatFee
+  
+  // If subtotal is 0 (e.g. just uploading a prescription), don't charge delivery fee yet.
+  // The admin will set the final price later.
+  const delivery_fee = (subtotal === 0 || subtotal >= minFree) ? 0 : flatFee
   const total = subtotal + delivery_fee
 
   const { data: order, error: orderError } = await supabase.from('orders').insert({
