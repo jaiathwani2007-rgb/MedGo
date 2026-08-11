@@ -78,12 +78,27 @@ export async function getAdminOrders() {
       *,
       profiles(full_name, phone_number),
       addresses(address_text),
-      order_items(quantity, price_at_time, medicine_name),
-      prescription_uploads(storage_path)
+      order_items(quantity, price_at_time, medicine_name)
     `)
     .order('created_at', { ascending: false })
   
   if (error) throw error
+
+  // Manually fetch prescription uploads to avoid foreign key relation errors
+  const orderIds = data.map((o: any) => o.id)
+  if (orderIds.length > 0) {
+    const { data: prescriptions } = await adminClient
+      .from('prescription_uploads')
+      .select('order_id, storage_path')
+      .in('order_id', orderIds)
+    
+    if (prescriptions) {
+      data.forEach((o: any) => {
+        o.prescription_uploads = prescriptions.filter(p => p.order_id === o.id)
+      })
+    }
+  }
+
   return data
 }
 
