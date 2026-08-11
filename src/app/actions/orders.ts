@@ -93,8 +93,17 @@ export async function getAdminOrders() {
       .in('order_id', orderIds)
     
     if (prescriptions) {
+      // Generate signed URLs for all prescriptions
+      const prescriptionsWithUrls = await Promise.all(prescriptions.map(async (p: any) => {
+        const { data } = await adminClient.storage.from('prescriptions').createSignedUrl(p.storage_path, 60 * 60 * 24)
+        return {
+          ...p,
+          signed_url: data?.signedUrl || null
+        }
+      }))
+
       data.forEach((o: any) => {
-        o.prescription_uploads = prescriptions.filter(p => p.order_id === o.id)
+        o.prescription_uploads = prescriptionsWithUrls.filter((p: any) => p.order_id === o.id)
       })
     }
   }

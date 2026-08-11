@@ -69,7 +69,7 @@ export default async function AdminOrdersPage() {
                     {order.prescription_uploads.map((upload: any, idx: number) => (
                       <a 
                         key={idx} 
-                        href={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/prescriptions/${upload.storage_path}`} 
+                        href={upload.signed_url || '#'} 
                         target="_blank" 
                         rel="noreferrer" 
                         className="text-xs bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded flex items-center gap-1 transition-colors"
