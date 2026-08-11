@@ -204,6 +204,25 @@ export async function addMedicineToOrder(orderId: string, medicineId: string, qu
   revalidatePath('/admin/orders')
 }
 
+export async function addCustomMedicineToOrder(orderId: string, name: string, price: number, quantity: number) {
+  const cookieStore = await cookies()
+  const adminAuth = cookieStore.get('admin_auth')?.value
+  if (adminAuth !== 'true') throw new Error('Unauthorized')
+
+  const adminClient = createAdminClient()
+  
+  await adminClient.from('order_items').insert({
+    order_id: orderId,
+    medicine_id: null,
+    medicine_name: name,
+    quantity,
+    price_at_time: price
+  })
+
+  await recalculateOrderTotal(orderId, adminClient)
+  revalidatePath('/admin/orders')
+}
+
 export async function removeMedicineFromOrder(orderId: string, itemId: string) {
   const cookieStore = await cookies()
   const adminAuth = cookieStore.get('admin_auth')?.value
