@@ -40,6 +40,15 @@ export default async function AdminCatalogPage({
           <input name="brand_name" placeholder="Brand Name" className="bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white" />
           <input required name="price" type="number" step="0.01" placeholder="Price (₹)" className="bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white" />
           <input required name="stock" type="number" placeholder="Initial Stock" className="bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white" />
+          <select name="category" className="bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white" defaultValue="General">
+            <option value="General">General</option>
+            <option value="Personal Care">Personal Care</option>
+            <option value="Headache">Headache</option>
+            <option value="Fever">Fever</option>
+            <option value="Cold & Cough">Cold & Cough</option>
+            <option value="First Aid">First Aid</option>
+            <option value="Supplements">Supplements</option>
+          </select>
           
           <label className="flex items-center gap-2 text-sm">
             <input type="checkbox" name="requires_prescription" className="w-4 h-4 rounded bg-gray-700 border-gray-600 text-emerald-500 focus:ring-emerald-500" />
@@ -78,11 +87,26 @@ export default async function AdminCatalogPage({
                 {med.requires_prescription && <span className="text-xs bg-amber-900/50 text-amber-400 px-2 py-0.5 rounded border border-amber-700">Rx</span>}
                 {med.is_otc_whitelisted && <span className="text-xs bg-emerald-900/50 text-emerald-400 px-2 py-0.5 rounded border border-emerald-700">OTC</span>}
               </h3>
-              <p className="text-sm text-gray-400">{med.generic_name} {med.brand_name && `(${med.brand_name})`}</p>
+              <p className="text-sm text-gray-400">
+                <span className="text-blue-400 font-medium mr-2">[{med.category || 'General'}]</span>
+                {med.generic_name} {med.brand_name && `(${med.brand_name})`}
+              </p>
             </div>
             
             <form action={handleUpdate.bind(null, med.id)} className="flex items-center gap-3 w-full md:w-auto">
-              <div className="flex flex-col gap-1 w-24">
+              <div className="flex flex-col gap-1 w-28">
+                <label className="text-xs text-gray-400">Category</label>
+                <select name="category" defaultValue={med.category || 'General'} className="bg-gray-700 border border-gray-600 rounded px-2 py-1 text-white text-sm">
+                  <option value="General">General</option>
+                  <option value="Personal Care">Personal Care</option>
+                  <option value="Headache">Headache</option>
+                  <option value="Fever">Fever</option>
+                  <option value="Cold & Cough">Cold & Cough</option>
+                  <option value="First Aid">First Aid</option>
+                  <option value="Supplements">Supplements</option>
+                </select>
+              </div>
+              <div className="flex flex-col gap-1 w-20">
                 <label className="text-xs text-gray-400">Price (₹)</label>
                 <input name="price" type="number" step="0.01" defaultValue={med.price} className="bg-gray-700 border border-gray-600 rounded px-2 py-1 text-white text-sm" />
               </div>

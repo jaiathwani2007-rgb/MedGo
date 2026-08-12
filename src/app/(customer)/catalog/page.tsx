@@ -8,11 +8,14 @@ export default async function CatalogPage({
 }) {
   const params = await searchParams
   const query = typeof params.q === 'string' ? params.q : ''
-  const medicines = await getCatalog(query)
+  const category = typeof params.c === 'string' ? params.c : 'All'
+  const medicines = await getCatalog(query, category)
+  
+  const CATEGORIES = ['All', 'Personal Care', 'Headache', 'Fever', 'Cold & Cough', 'First Aid', 'Supplements', 'General']
 
   return (
     <main className="min-h-screen bg-gray-50 pb-20">
-      <div className="bg-blue-600 text-white p-6 pb-10 rounded-b-3xl shadow-md">
+      <div className="bg-blue-600 text-white p-6 pb-12 rounded-b-3xl shadow-md">
         <h1 className="text-2xl font-bold mb-4">MedGo Catalog</h1>
         <form className="relative">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -25,7 +28,20 @@ export default async function CatalogPage({
             placeholder="Search by name, generic, or brand..."
             className="block w-full pl-10 pr-3 py-3 border-none rounded-xl bg-blue-700/50 text-white placeholder-blue-200 focus:ring-2 focus:ring-white transition-shadow"
           />
+          <input type="hidden" name="c" value={category} />
         </form>
+        
+        <div className="mt-4 flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+          {CATEGORIES.map(cat => (
+            <a 
+              key={cat}
+              href={`/catalog?c=${encodeURIComponent(cat)}${query ? `&q=${encodeURIComponent(query)}` : ''}`}
+              className={`whitespace-nowrap px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${cat === category ? 'bg-white text-blue-600' : 'bg-blue-700/50 text-blue-100 hover:bg-blue-700'}`}
+            >
+              {cat}
+            </a>
+          ))}
+        </div>
       </div>
 
       <div className="px-4 -mt-4">
@@ -47,10 +63,14 @@ export default async function CatalogPage({
                 </div>
                 
                 {(med.generic_name || med.brand_name) && (
-                  <p className="text-sm text-gray-500 mb-4">
+                  <p className="text-sm text-gray-500 mb-2">
                     {med.generic_name} {med.brand_name && `(${med.brand_name})`}
                   </p>
                 )}
+                
+                <div className="text-xs font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded w-max mb-4">
+                  {med.category || 'General'}
+                </div>
 
                 <div className="mt-auto flex items-center justify-between pt-4 border-t border-gray-50">
                   <div className="text-lg font-bold text-gray-900">₹{med.price.toFixed(2)}</div>

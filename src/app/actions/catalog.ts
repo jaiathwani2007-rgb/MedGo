@@ -14,16 +14,21 @@ export type Medicine = {
   requires_prescription: boolean
   is_otc_whitelisted: boolean
   image_url: string | null
+  category: string
 }
 
-// Public: Fetch catalog with optional search query
-export async function getCatalog(query: string = '') {
+// Public: Fetch catalog with optional search query and category
+export async function getCatalog(query: string = '', category: string = 'All') {
   const supabase = createAdminClient()
   
   let dbQuery = supabase.from('medicines').select('*').order('name')
   
   if (query) {
     dbQuery = dbQuery.or(`name.ilike.%${query}%,generic_name.ilike.%${query}%,brand_name.ilike.%${query}%`)
+  }
+
+  if (category && category !== 'All') {
+    dbQuery = dbQuery.eq('category', category)
   }
 
   const { data, error } = await dbQuery
@@ -53,9 +58,10 @@ export async function addMedicine(formData: FormData) {
   const stock = parseInt(formData.get('stock') as string, 10)
   const requires_prescription = formData.get('requires_prescription') === 'on'
   const is_otc_whitelisted = formData.get('is_otc_whitelisted') === 'on'
+  const category = formData.get('category') as string || 'General'
 
   const { error } = await adminClient.from('medicines').insert({
-    name, generic_name, brand_name, price, stock, requires_prescription, is_otc_whitelisted
+    name, generic_name, brand_name, price, stock, requires_prescription, is_otc_whitelisted, category
   })
 
   if (error) return { error: error.message }
@@ -80,6 +86,9 @@ export async function updateMedicine(id: string, formData: FormData) {
   
   const is_otc_whitelisted = formData.get('is_otc_whitelisted')
   if (is_otc_whitelisted !== null) updates.is_otc_whitelisted = is_otc_whitelisted === 'on'
+
+  const category = formData.get('category')
+  if (category) updates.category = category as string
 
   updates.updated_at = new Date().toISOString()
 

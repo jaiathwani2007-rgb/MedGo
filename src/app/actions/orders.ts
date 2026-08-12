@@ -175,15 +175,14 @@ async function recalculateOrderTotal(orderId: string, supabase: any) {
 
   const subtotal = (items || []).reduce((sum: number, item: any) => sum + (item.price_at_time * item.quantity), 0)
   
-  const { data: rules, error: rulesError } = await supabase.from('delivery_charge_rules').select('*').single()
-  if (rulesError) throw new Error(`Fetch rules error: ${rulesError.message}`)
+  const { data: orderData, error: orderError } = await supabase.from('orders').select('delivery_fee').eq('id', orderId).single()
+  if (orderError) throw new Error(`Fetch order error: ${orderError.message}`)
 
-  const minFree = rules?.min_order_value_for_free_delivery || 500
-  const flatFee = rules?.flat_delivery_fee || 50
-  const delivery_fee = (subtotal === 0 || subtotal >= minFree) ? 0 : flatFee
+  // Use the existing delivery fee or default to 0
+  const delivery_fee = orderData?.delivery_fee || 0
   const total = subtotal + delivery_fee
 
-  const { error: updateError } = await supabase.from('orders').update({ subtotal, delivery_fee, total }).eq('id', orderId)
+  const { error: updateError } = await supabase.from('orders').update({ subtotal, total }).eq('id', orderId)
   if (updateError) throw new Error(`Update order error: ${updateError.message}`)
 }
 
@@ -265,4 +264,17 @@ export async function completeDelivery(orderId: string, inputOtp: string) {
 
   if (error) return { error: error.message }
   return { success: true }
+}
+
+export async function updateDeliveryFee(orderId: string, fee: number) {
+  const cookieStore = await cookies()
+  const adminAuth = cookieStore.get('admin_auth')?.value
+  if (adminAuth !== 'true') throw new Error('Unauthorized')
+
+  const adminClient = createAdminClient()
+  const { error } = await adminClient.from('orders').update({ delivery_fee: fee }).eq('id', orderId)
+  if (error) throw new Error(`Update delivery fee error: ${error.message}`)
+
+  await recalculateOrderTotal(orderId, adminClient)
+  revalidatePath('/admin/orders')
 }

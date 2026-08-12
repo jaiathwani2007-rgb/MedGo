@@ -87,9 +87,33 @@ export default function OrderDetailsPage({ params }: { params: Promise<{ id: str
               </div>
             )}
 
-            <div className="flex justify-between items-center text-xl font-bold text-gray-900 mb-6 border-y border-gray-100 py-4">
-              <span>Final Bill</span>
-              <span className="text-blue-600">₹{order.total.toFixed(2)}</span>
+            <div className="mb-6">
+              <h3 className="font-bold text-gray-700 mb-3 border-b border-gray-100 pb-2">Itemized Bill</h3>
+              <ul className="space-y-3 mb-4">
+                {order.order_items?.map((item: any) => (
+                  <li key={item.id} className="flex justify-between items-start text-sm">
+                    <div>
+                      <div className="font-medium text-gray-900">{item.medicine_name}</div>
+                      <div className="text-gray-500">Qty: {item.quantity} × ₹{item.price_at_time.toFixed(2)}</div>
+                    </div>
+                    <div className="font-medium text-gray-900">₹{(item.quantity * item.price_at_time).toFixed(2)}</div>
+                  </li>
+                ))}
+              </ul>
+              
+              <div className="flex justify-between text-sm text-gray-500 mb-2">
+                <span>Subtotal</span>
+                <span>₹{order.subtotal.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between text-sm text-gray-500 mb-4 pb-4 border-b border-gray-100">
+                <span>Delivery Charge</span>
+                <span>{order.delivery_fee === 0 ? 'Free' : `₹${order.delivery_fee.toFixed(2)}`}</span>
+              </div>
+              
+              <div className="flex justify-between items-center text-xl font-bold text-gray-900">
+                <span>Final Bill</span>
+                <span className="text-blue-600">₹{order.total.toFixed(2)}</span>
+              </div>
             </div>
 
             <h3 className="font-bold text-gray-700 mb-3">Select Payment Method</h3>
@@ -110,9 +134,9 @@ export default function OrderDetailsPage({ params }: { params: Promise<{ id: str
 
             {payMethod === 'UPI' && (
               <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 mb-6 text-center">
-                <img src="/upi-qr.png" alt="Shop UPI QR Code" className="mx-auto mb-4 rounded-lg max-w-[200px]" onError={(e) => (e.currentTarget.style.display = 'none')} />
-                <p className="text-sm text-gray-500 mb-1 italic">(Please ensure you place your upi-qr.png in the public folder)</p>
-                <p className="text-sm font-bold text-gray-700 mb-4">Exact Amount: ₹{order.total.toFixed(2)}</p>
+                <img src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=shop@upi&pn=MedGo&am=${order.total}`} alt="Shop UPI QR Code" className="mx-auto mb-4 rounded-lg shadow-sm" />
+                <p className="text-sm font-bold text-gray-700 mb-1">Exact Amount: ₹{order.total.toFixed(2)}</p>
+                <p className="text-xs text-gray-500 mb-4">Having trouble? Call us at <a href="tel:+919876543210" className="text-blue-600 font-bold underline">+91 98765 43210</a></p>
                 
                 <input 
                   type="text" 
