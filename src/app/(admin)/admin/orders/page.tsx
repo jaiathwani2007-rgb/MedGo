@@ -37,35 +37,34 @@ export default async function AdminOrdersPage() {
   }
 
   return (
-    <main className="min-h-screen bg-gray-900 text-gray-100 p-6 pb-20">
+    <div className="pb-20 font-sans">
       <OrderRealtimeUpdater />
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-white">Verification Queue</h1>
+        <h1 className="text-3xl font-serif font-bold text-ink">Verification Queue</h1>
       </div>
 
       <div className="space-y-6">
-        {orders.length === 0 && <p className="text-gray-400">No orders found.</p>}
+        {orders.length === 0 && <p className="text-slate-500">No orders found.</p>}
         {orders.map((order: any) => (
-          <div key={order.id} className="bg-gray-800 rounded-2xl border border-gray-700 overflow-hidden shadow-xl">
-            <div className="p-4 border-b border-gray-700 bg-gray-800 flex justify-between items-center">
+          <div key={order.id} className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+            <div className="p-5 border-b border-gray-100 bg-slate-50 flex justify-between items-center">
               <div>
-                <p className="text-sm text-gray-400">Order ID: <span className="font-mono text-gray-300">{order.id.slice(0, 8)}</span></p>
-                <p className="font-semibold text-white">{order.profiles?.full_name} • {order.profiles?.phone_number}</p>
-                <p className="text-sm text-gray-400 mt-1 line-clamp-1">{order.addresses?.address_text}</p>
+                <p className="text-sm text-slate-500">Order ID: <span className="font-mono text-slate-700">{order.id.slice(0, 8)}</span></p>
+                <p className="font-bold text-ink">{order.profiles?.full_name} • {order.profiles?.phone_number}</p>
+                <p className="text-sm text-slate-500 mt-1 line-clamp-1">{order.addresses?.address_text}</p>
               </div>
               <div className={`px-3 py-1 rounded-full text-xs font-bold ${
-                order.status === 'pending_verification' ? 'bg-amber-900/50 text-amber-400 border border-amber-700' :
-                order.status === 'approved' ? 'bg-emerald-900/50 text-emerald-400 border border-emerald-700' :
-                'bg-red-900/50 text-red-400 border border-red-700'
+                order.status === 'pending_verification' ? 'bg-orange-100 text-orange-700 border border-orange-200' :
+                order.status === 'approved' ? 'bg-sage/10 text-sage border border-sage/20' :
+                'bg-clay/10 text-clay border border-clay/20'
               }`}>
                 {order.status.replace('_', ' ').toUpperCase()}
               </div>
             </div>
-            
-            <div className="p-4">
+            <div className="p-5">
               {order.prescription_uploads && order.prescription_uploads.length > 0 && (
-                <div className="mb-4 bg-gray-900 p-3 rounded-lg border border-blue-900/30">
-                  <h4 className="text-sm font-medium text-blue-400 mb-2">Prescription Attached</h4>
+                <div className="mb-4 bg-blue-50 p-4 rounded-lg border border-blue-100">
+                  <h4 className="text-sm font-bold text-slate-azure mb-2 font-serif">Prescription Attached</h4>
                   <div className="flex gap-2 flex-wrap">
                     {order.prescription_uploads.map((upload: any, idx: number) => (
                       <a 
@@ -73,7 +72,7 @@ export default async function AdminOrdersPage() {
                         href={upload.signed_url || '#'} 
                         target="_blank" 
                         rel="noreferrer" 
-                        className="text-xs bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded flex items-center gap-1 transition-colors"
+                        className="text-xs bg-slate-azure hover:bg-[#1a445e] text-white px-3 py-2 rounded-md flex items-center gap-1 transition-colors font-medium"
                       >
                         View Prescription {idx + 1}
                       </a>
@@ -86,11 +85,11 @@ export default async function AdminOrdersPage() {
                 <AdminOrderItemEditor orderId={order.id} currentItems={order.order_items} />
               ) : (
                 <>
-                  <h4 className="text-sm font-medium text-gray-400 mb-2">Items</h4>
-                  <ul className="space-y-1 mb-4">
+                  <h4 className="text-sm font-bold text-slate-500 mb-2 font-serif">Items</h4>
+                  <ul className="space-y-2 mb-4">
                     {order.order_items.map((item: any, idx: number) => (
-                      <li key={idx} className="flex justify-between text-sm text-gray-300">
-                        <span>{item.quantity}x {item.medicine_name}</span>
+                      <li key={idx} className="flex justify-between text-sm text-ink border-b border-gray-50 pb-2">
+                        <span className="font-medium">{item.quantity}x {item.medicine_name}</span>
                         <span>₹{(item.price_at_time * item.quantity).toFixed(2)}</span>
                       </li>
                     ))}
@@ -98,29 +97,29 @@ export default async function AdminOrdersPage() {
                 </>
               )}
               
-              <div className="flex justify-between items-end border-t border-gray-700 pt-3 text-white mb-6">
+              <div className="flex justify-between items-end border-t border-gray-200 pt-4 text-ink mb-6">
                 <div>
-                  <div className="text-sm text-gray-400">Subtotal: ₹{order.subtotal.toFixed(2)}</div>
-                  <div className="text-sm text-gray-400">Delivery: {order.delivery_fee === 0 ? 'Free' : `₹${order.delivery_fee.toFixed(2)}`}</div>
+                  <div className="text-sm text-slate-500">Subtotal: ₹{order.subtotal.toFixed(2)}</div>
+                  <div className="text-sm text-slate-500">Delivery: {order.delivery_fee === 0 ? 'Free' : `₹${order.delivery_fee.toFixed(2)}`}</div>
                 </div>
-                <div className="text-xl font-bold">Total: ₹{order.total.toFixed(2)}</div>
+                <div className="text-xl font-bold font-serif text-slate-azure">Total: ₹{order.total.toFixed(2)}</div>
               </div>
 
               {order.status === 'pending_verification' && (
-                <div className="bg-gray-900 p-4 rounded-xl border border-gray-700 mb-4">
-                  <h4 className="text-sm font-medium text-emerald-400 mb-3">Pharmacist Action</h4>
+                <div className="bg-parchment p-5 rounded-xl border border-gray-200 mb-4">
+                  <h4 className="text-sm font-bold text-sage mb-3 font-serif">Pharmacist Action</h4>
                   <form className="flex flex-col gap-3">
                     <textarea 
                       name="pharmacist_note" 
                       placeholder="Add a note (e.g. replaced item, requires substitute...)"
-                      className="bg-gray-800 border border-gray-600 rounded-lg p-2 text-sm text-white w-full"
+                      className="bg-white border border-gray-300 rounded-lg p-3 text-sm text-ink w-full focus:ring-2 focus:ring-slate-azure outline-none"
                     />
-                    <div className="flex gap-2">
-                      <SubmitButton formAction={handleStatus.bind(null, order.id, 'approved')} className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white py-2 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors">
-                        <CheckCircle className="w-4 h-4" /> Approve
+                    <div className="flex gap-3 mt-2">
+                      <SubmitButton formAction={handleStatus.bind(null, order.id, 'approved')} className="flex-1 bg-sage hover:bg-[#346b52] text-white py-3 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors shadow-sm">
+                        <CheckCircle className="w-5 h-5" /> Approve
                       </SubmitButton>
-                      <SubmitButton formAction={handleStatus.bind(null, order.id, 'rejected')} className="flex-1 bg-red-600 hover:bg-red-500 text-white py-2 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors">
-                        <XCircle className="w-4 h-4" /> Reject
+                      <SubmitButton formAction={handleStatus.bind(null, order.id, 'rejected')} className="flex-1 bg-clay hover:bg-[#a64b3c] text-white py-3 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors shadow-sm">
+                        <XCircle className="w-5 h-5" /> Reject
                       </SubmitButton>
                     </div>
                   </form>
@@ -128,25 +127,44 @@ export default async function AdminOrdersPage() {
               )}
 
               {order.payment_status === 'verifying' && (
-                <div className="bg-gray-900 p-4 rounded-xl border border-blue-900 mb-4">
-                  <h4 className="text-sm font-medium text-blue-400 mb-2">Payment Verification</h4>
-                  <p className="text-sm text-gray-300 mb-3">Customer claims to have paid via UPI. Reference: <span className="font-mono text-white bg-gray-800 px-2 py-1 rounded">{order.payment_reference}</span></p>
-                  <form className="flex gap-2">
-                    <SubmitButton formAction={handlePaymentVerify.bind(null, order.id, true)} className="flex-1 bg-blue-600 hover:bg-blue-500 text-white py-2 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors">
-                      <CheckCircle className="w-4 h-4" /> Confirm Received
+                <div className="bg-blue-50 p-5 rounded-xl border border-blue-200 mb-4">
+                  <h4 className="text-sm font-bold text-slate-azure mb-2 font-serif">Payment Verification</h4>
+                  <p className="text-sm text-slate-600 mb-4">Customer claims to have paid via UPI.</p>
+                  
+                  {order.payment_screenshot_path ? (
+                    <div className="mb-4 text-center bg-white p-2 rounded-xl border border-blue-100 shadow-sm">
+                      <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Payment Screenshot</p>
+                      <a 
+                        href={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/payments/${order.payment_screenshot_path}`} 
+                        target="_blank" rel="noreferrer"
+                      >
+                        <img 
+                          src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/payments/${order.payment_screenshot_path}`} 
+                          alt="Payment Screenshot" 
+                          className="max-w-full h-48 object-contain mx-auto rounded-lg cursor-zoom-in"
+                        />
+                      </a>
+                    </div>
+                  ) : order.payment_reference ? (
+                    <p className="text-sm text-slate-600 mb-4">Reference: <span className="font-mono text-ink bg-white border border-gray-200 px-2 py-1 rounded shadow-sm">{order.payment_reference}</span></p>
+                  ) : null}
+
+                  <form className="flex gap-3">
+                    <SubmitButton formAction={handlePaymentVerify.bind(null, order.id, true)} className="flex-1 bg-slate-azure hover:bg-[#1a445e] text-white py-3 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors shadow-sm">
+                      <CheckCircle className="w-5 h-5" /> Confirm Received
                     </SubmitButton>
-                    <SubmitButton formAction={handlePaymentVerify.bind(null, order.id, false)} className="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-2 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors">
-                      <XCircle className="w-4 h-4" /> Not Received
+                    <SubmitButton formAction={handlePaymentVerify.bind(null, order.id, false)} className="flex-1 bg-white border border-gray-300 hover:bg-gray-50 text-slate-700 py-3 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors shadow-sm">
+                      <XCircle className="w-5 h-5" /> Not Received
                     </SubmitButton>
                   </form>
                 </div>
               )}
 
               {order.status === 'processing' && order.payment_status !== 'verifying' && (
-                <div className="bg-gray-900 p-4 rounded-xl border border-amber-900 mb-4">
-                  <h4 className="text-sm font-medium text-amber-400 mb-3">Dispatch Order</h4>
+                <div className="bg-orange-50 p-5 rounded-xl border border-orange-200 mb-4">
+                  <h4 className="text-sm font-bold text-orange-700 mb-3 font-serif">Dispatch Order</h4>
                   <form>
-                    <SubmitButton formAction={handleOutForDelivery.bind(null, order.id)} className="w-full bg-amber-600 hover:bg-amber-500 text-white py-2 rounded-lg font-medium transition-colors">
+                    <SubmitButton formAction={handleOutForDelivery.bind(null, order.id)} className="w-full bg-orange-600 hover:bg-orange-700 text-white py-3 rounded-lg font-medium transition-colors shadow-sm">
                       Send Out for Delivery (Generates OTP)
                     </SubmitButton>
                   </form>
@@ -154,18 +172,18 @@ export default async function AdminOrdersPage() {
               )}
 
               {order.status === 'out_for_delivery' && (
-                <div className="bg-gray-900 p-4 rounded-xl border border-emerald-900 mb-4">
-                  <h4 className="text-sm font-medium text-emerald-400 mb-3">Complete Delivery</h4>
+                <div className="bg-sage/10 p-5 rounded-xl border border-sage/30 mb-4">
+                  <h4 className="text-sm font-bold text-sage mb-3 font-serif">Complete Delivery</h4>
                   <form className="flex gap-3">
                     <input 
                       name="otp"
                       type="text"
                       placeholder="Enter 4-digit OTP"
-                      className="bg-gray-800 border border-gray-600 rounded-lg p-2 text-white font-mono flex-1 text-center"
+                      className="bg-white border border-sage/40 rounded-lg p-3 text-ink font-mono flex-1 text-center text-lg tracking-widest focus:ring-2 focus:ring-sage outline-none"
                       maxLength={4}
                       required
                     />
-                    <SubmitButton formAction={handleCompleteDelivery.bind(null, order.id)} className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 rounded-lg font-medium transition-colors">
+                    <SubmitButton formAction={handleCompleteDelivery.bind(null, order.id)} className="bg-sage hover:bg-[#346b52] text-white px-6 rounded-lg font-bold transition-colors shadow-sm">
                       Verify & Deliver
                     </SubmitButton>
                   </form>
@@ -175,6 +193,6 @@ export default async function AdminOrdersPage() {
           </div>
         ))}
       </div>
-    </main>
+    </div>
   )
 }

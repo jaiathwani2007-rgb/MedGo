@@ -29,7 +29,11 @@ export default function CartPage() {
     
     const res = await submitOrder(items, prescriptionPath, subscribe)
     if (res.error) {
-      setError(res.error)
+      if (res.error === 'No delivery address found on your profile.') {
+        router.push('/onboarding')
+      } else {
+        setError(res.error)
+      }
       setLoading(false)
     } else {
       clearCart()

@@ -1,11 +1,21 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+import { Hind, Martel } from 'next/font/google'
 import './globals.css'
 import { LanguageProvider } from '@/components/LanguageProvider'
 import { CartProvider } from '@/components/CartProvider'
 import { cookies } from 'next/headers'
 
-const inter = Inter({ subsets: ['latin'] })
+const hind = Hind({ 
+  subsets: ['latin', 'devanagari'], 
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-hind'
+})
+
+const martel = Martel({ 
+  subsets: ['latin', 'devanagari'], 
+  weight: ['400', '700', '900'],
+  variable: '--font-martel'
+})
 
 export const metadata: Metadata = {
   title: 'MedGo Pharmacy',
@@ -22,7 +32,7 @@ export default async function RootLayout({
 
   return (
     <html lang={initialLanguage}>
-      <body className={`${inter.className} antialiased bg-gray-50 text-gray-900`}>
+      <body className={`${hind.variable} ${martel.variable} font-sans antialiased bg-parchment text-ink`}>
         <LanguageProvider initialLanguage={initialLanguage}>
           <CartProvider>
             {children}

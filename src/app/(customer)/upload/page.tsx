@@ -11,7 +11,11 @@ export default function UploadPage() {
     try {
       const res = await submitOrder([], path, false)
       if (res?.error) {
-        alert(res.error)
+        if (res.error === 'No delivery address found on your profile.') {
+          router.push('/onboarding')
+        } else {
+          alert(res.error)
+        }
       } else {
         alert('Prescription uploaded successfully! The pharmacist will review it shortly.')
         router.push('/orders')

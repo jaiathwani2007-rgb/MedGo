@@ -78,19 +78,19 @@ export function AdminOrderItemEditor({ orderId, currentItems }: { orderId: strin
   }
 
   return (
-    <div className="bg-gray-800 p-4 rounded-xl border border-gray-700 mb-4">
-      <h4 className="text-sm font-medium text-blue-400 mb-3">Manage Order Items</h4>
+    <div className="bg-parchment p-5 rounded-xl border border-gray-200 mb-4 font-sans">
+      <h4 className="text-sm font-bold text-slate-azure mb-3 font-serif">Manage Order Items</h4>
       
       {/* Existing Items */}
       {currentItems.length > 0 && (
         <ul className="mb-4 space-y-2">
           {currentItems.map((item, idx) => (
-            <li key={item.id || idx} className="flex justify-between items-center bg-gray-900 px-3 py-2 rounded border border-gray-700 text-sm text-gray-300">
-              <span>{item.quantity}x {item.medicine_name}</span>
+            <li key={item.id || idx} className="flex justify-between items-center bg-white px-3 py-3 rounded border border-gray-200 text-sm text-ink shadow-sm">
+              <span className="font-medium">{item.quantity}x {item.medicine_name}</span>
               <div className="flex items-center gap-4">
-                <span className="font-medium text-white">₹{(item.price_at_time * item.quantity).toFixed(2)}</span>
+                <span className="font-bold text-ink">₹{(item.price_at_time * item.quantity).toFixed(2)}</span>
                 {item.id && (
-                  <button onClick={() => handleRemove(item.id)} disabled={loading} className="text-red-400 hover:text-red-300 transition-colors p-1 bg-red-400/10 rounded">
+                  <button onClick={() => handleRemove(item.id)} disabled={loading} className="text-clay hover:text-[#a64b3c] transition-colors p-1 bg-clay/10 rounded">
                     <Trash2 className="w-4 h-4" />
                   </button>
                 )}
@@ -102,7 +102,7 @@ export function AdminOrderItemEditor({ orderId, currentItems }: { orderId: strin
 
       {/* Add New Item */}
       <div className="mb-2 flex items-center justify-between">
-        <label className="text-xs text-gray-400 font-medium uppercase tracking-wider">
+        <label className="text-xs text-slate-500 font-bold uppercase tracking-wider">
           {isCustom ? 'Add Custom Medicine' : 'Search Catalog'}
         </label>
         <button 
@@ -113,27 +113,27 @@ export function AdminOrderItemEditor({ orderId, currentItems }: { orderId: strin
             setCustomPrice('')
             setSelectedMedId('')
           }}
-          className="text-xs text-blue-400 hover:text-blue-300 underline"
+          className="text-xs text-slate-azure hover:text-[#1a445e] underline font-medium"
         >
           {isCustom ? 'Switch to Catalog Search' : 'Add Custom Item Manually'}
         </button>
       </div>
 
-      <div className="flex gap-2 items-end">
+      <div className="flex gap-3 items-end">
         {isCustom ? (
           <>
             <div className="flex-1">
-              <label className="block text-xs text-gray-400 mb-1">Name</label>
+              <label className="block text-xs text-slate-500 mb-1 font-medium">Name</label>
               <input 
                 type="text" 
                 value={customName} 
                 onChange={e => setCustomName(e.target.value)} 
                 placeholder="e.g. Paracetamol 500mg" 
-                className="w-full bg-gray-900 border border-gray-600 rounded-lg px-3 py-2 text-sm text-white focus:border-blue-500 outline-none"
+                className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-ink focus:ring-2 focus:ring-slate-azure outline-none shadow-sm"
               />
             </div>
             <div className="w-24">
-              <label className="block text-xs text-gray-400 mb-1">Price (₹)</label>
+              <label className="block text-xs text-slate-500 mb-1 font-medium">Price (₹)</label>
               <input 
                 type="number" 
                 min="0"
@@ -141,33 +141,33 @@ export function AdminOrderItemEditor({ orderId, currentItems }: { orderId: strin
                 value={customPrice} 
                 onChange={e => setCustomPrice(e.target.value ? parseFloat(e.target.value) : '')}
                 placeholder="0.00"
-                className="w-full bg-gray-900 border border-gray-600 rounded-lg px-3 py-2 text-sm text-white focus:border-blue-500 outline-none"
+                className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-ink focus:ring-2 focus:ring-slate-azure outline-none shadow-sm"
               />
             </div>
           </>
         ) : (
           <div className="flex-1 relative">
-            <label className="block text-xs text-gray-400 mb-1">Search Catalog</label>
+            <label className="block text-xs text-slate-500 mb-1 font-medium">Search Catalog</label>
             <div className="relative">
-              <Search className="absolute left-2 top-2.5 w-4 h-4 text-gray-500" />
+              <Search className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
               <input 
                 type="text" 
                 value={search} 
                 onChange={e => { setSearch(e.target.value); setSelectedMedId('') }} 
                 placeholder="Type medicine name..." 
-                className="w-full bg-gray-900 border border-gray-600 rounded-lg pl-8 pr-3 py-2 text-sm text-white focus:border-blue-500 outline-none"
+                className="w-full bg-white border border-gray-300 rounded-lg pl-9 pr-3 py-2.5 text-sm text-ink focus:ring-2 focus:ring-slate-azure outline-none shadow-sm"
               />
             </div>
             {search && filteredMeds.length > 0 && !selectedMedId && (
-              <ul className="absolute z-10 w-full mt-1 bg-gray-800 border border-gray-600 rounded-lg shadow-2xl max-h-40 overflow-y-auto">
+              <ul className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-xl max-h-40 overflow-y-auto">
                 {filteredMeds.map(med => (
                   <li 
                     key={med.id} 
                     onClick={() => { setSelectedMedId(med.id); setSearch(med.name) }}
-                    className="px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 cursor-pointer border-b border-gray-700 last:border-0"
+                    className="px-4 py-3 text-sm text-ink hover:bg-slate-50 cursor-pointer border-b border-gray-100 last:border-0"
                   >
-                    <div className="font-medium text-white">{med.name}</div>
-                    <div className="text-xs text-emerald-400">₹{med.price.toFixed(2)} / unit • Stock: {med.stock}</div>
+                    <div className="font-bold">{med.name}</div>
+                    <div className="text-xs text-sage mt-1">₹{med.price.toFixed(2)} / unit • Stock: {med.stock}</div>
                   </li>
                 ))}
               </ul>
@@ -175,28 +175,28 @@ export function AdminOrderItemEditor({ orderId, currentItems }: { orderId: strin
           </div>
         )}
         <div className="w-16">
-          <label className="block text-xs text-gray-400 mb-1">Qty</label>
+          <label className="block text-xs text-slate-500 mb-1 font-medium">Qty</label>
           <input 
             type="number" 
             min="1" 
             value={quantity} 
             onChange={e => setQuantity(parseInt(e.target.value) || 1)}
-            className="w-full bg-gray-900 border border-gray-600 rounded-lg px-2 py-2 text-sm text-white text-center focus:border-blue-500 outline-none"
+            className="w-full bg-white border border-gray-300 rounded-lg px-2 py-2.5 text-sm text-ink text-center focus:ring-2 focus:ring-slate-azure outline-none shadow-sm"
           />
         </div>
         <button 
           onClick={handleAdd} 
           disabled={(isCustom ? (!customName || !customPrice) : !selectedMedId) || loading} 
-          className="bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white px-3 py-2 rounded-lg flex items-center justify-center transition-colors h-[38px]"
+          className="bg-slate-azure hover:bg-[#1a445e] disabled:opacity-50 disabled:cursor-not-allowed text-white px-4 py-2.5 rounded-lg flex items-center justify-center transition-colors h-[42px] shadow-sm"
         >
-          {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+          {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Plus className="w-5 h-5" />}
         </button>
       </div>
 
       {/* Manual Delivery Fee */}
-      <div className="mt-6 pt-4 border-t border-gray-700 flex items-end gap-2">
+      <div className="mt-6 pt-5 border-t border-gray-200 flex items-end gap-3">
         <div className="w-32">
-          <label className="block text-xs text-gray-400 mb-1">Set Delivery Fee (₹)</label>
+          <label className="block text-xs text-slate-500 mb-1 font-medium">Set Delivery Fee (₹)</label>
           <input 
             type="number" 
             min="0"
@@ -204,15 +204,15 @@ export function AdminOrderItemEditor({ orderId, currentItems }: { orderId: strin
             value={deliveryFee} 
             onChange={e => setDeliveryFee(e.target.value ? parseFloat(e.target.value) : '')}
             placeholder="e.g. 50"
-            className="w-full bg-gray-900 border border-gray-600 rounded-lg px-3 py-2 text-sm text-white focus:border-blue-500 outline-none"
+            className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-ink focus:ring-2 focus:ring-slate-azure outline-none shadow-sm"
           />
         </div>
         <button 
           onClick={handleUpdateDelivery} 
           disabled={deliveryFee === '' || updatingDelivery} 
-          className="bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed text-white px-3 py-2 rounded-lg flex items-center justify-center transition-colors h-[38px]"
+          className="bg-sage hover:bg-[#346b52] disabled:opacity-50 disabled:cursor-not-allowed text-white px-4 py-2.5 rounded-lg flex items-center justify-center transition-colors h-[42px] font-bold shadow-sm"
         >
-          {updatingDelivery ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
+          {updatingDelivery ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5 mr-2" />}
           Update Delivery
         </button>
       </div>

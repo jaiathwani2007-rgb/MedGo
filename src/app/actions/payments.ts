@@ -17,8 +17,8 @@ export async function submitPayment(orderId: string, method: 'COD' | 'UPI', refe
     updates.payment_status = 'pending'
     updates.status = 'processing' 
   } else if (method === 'UPI') {
-    if (!reference || reference.length < 12) return { error: 'Invalid UPI reference number' }
-    updates.payment_reference = reference
+    if (!reference) return { error: 'Payment screenshot is required' }
+    updates.payment_screenshot_path = reference
     updates.payment_status = 'verifying'
   }
 

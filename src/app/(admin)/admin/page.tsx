@@ -3,29 +3,29 @@ import { ClipboardList, Pill } from 'lucide-react'
 
 export default function AdminDashboard() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-24 bg-gray-900 text-white">
-      <h1 className="text-4xl font-bold text-emerald-400 mb-4">MedGo Admin Dashboard</h1>
-      <p className="text-lg text-gray-400 mb-12 text-center max-w-md">
+    <div className="flex flex-col">
+      <h1 className="text-3xl font-serif font-bold text-ink mb-2">Overview</h1>
+      <p className="text-slate-500 font-sans mb-8">
         Review orders, verify prescriptions, and manage your medicine catalog.
       </p>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-2xl">
-        <Link href="/admin/orders" className="bg-gray-800 border border-gray-700 hover:border-emerald-500 rounded-2xl p-6 transition-all hover:shadow-[0_0_20px_rgba(16,185,129,0.1)] group">
-          <div className="bg-gray-900 w-12 h-12 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-            <ClipboardList className="text-emerald-400 w-6 h-6" />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-2xl font-sans">
+        <Link href="/admin/orders" className="bg-white border border-gray-200 hover:border-slate-azure rounded-xl p-6 transition-all hover:shadow-md group">
+          <div className="bg-slate-50 w-12 h-12 rounded-xl flex items-center justify-center mb-4 group-hover:bg-slate-azure group-hover:text-white transition-colors text-slate-azure">
+            <ClipboardList className="w-6 h-6" />
           </div>
-          <h2 className="text-xl font-bold text-white mb-2">Orders & Prescriptions</h2>
-          <p className="text-sm text-gray-400">View incoming orders, verify uploaded prescriptions, and manage deliveries.</p>
+          <h2 className="text-xl font-bold text-ink mb-2 font-serif">Orders & Prescriptions</h2>
+          <p className="text-sm text-slate-500">View incoming orders, verify uploaded prescriptions, and manage deliveries.</p>
         </Link>
 
-        <Link href="/admin/catalog" className="bg-gray-800 border border-gray-700 hover:border-blue-500 rounded-2xl p-6 transition-all hover:shadow-[0_0_20px_rgba(59,130,246,0.1)] group">
-          <div className="bg-gray-900 w-12 h-12 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-            <Pill className="text-blue-400 w-6 h-6" />
+        <Link href="/admin/catalog" className="bg-white border border-gray-200 hover:border-slate-azure rounded-xl p-6 transition-all hover:shadow-md group">
+          <div className="bg-slate-50 w-12 h-12 rounded-xl flex items-center justify-center mb-4 group-hover:bg-slate-azure group-hover:text-white transition-colors text-slate-azure">
+            <Pill className="w-6 h-6" />
           </div>
-          <h2 className="text-xl font-bold text-white mb-2">Medicine Catalog</h2>
-          <p className="text-sm text-gray-400">Add, edit, or remove medicines from your store inventory.</p>
+          <h2 className="text-xl font-bold text-ink mb-2 font-serif">Medicine Catalog</h2>
+          <p className="text-sm text-slate-500">Add, edit, or remove medicines from your store inventory.</p>
         </Link>
       </div>
-    </main>
+    </div>
   )
 }

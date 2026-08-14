@@ -6,89 +6,70 @@ import bcrypt from 'bcryptjs'
 import { setSession, getSession, clearSession } from '@/utils/session'
 
 export async function login(formData: FormData) {
-  const username = formData.get('username') as string
-  const password = formData.get('password') as string
+  const phone = formData.get('phone') as string
+  const pin = formData.get('pin') as string
   const supabase = createAdminClient()
 
-  // Find user by username
-  const { data: profile, error } = await supabase
+  if (!phone || !pin) return { error: 'Phone and PIN are required' }
+  const safePhone = phone.trim()
+
+  // Find user by phone
+  const { data: profile } = await supabase
     .from('profiles')
-    .select('id, password_hash, full_name')
-    .eq('username', username.toLowerCase().trim())
+    .select('id, password_hash, onboarding_completed')
+    .eq('phone_number', safePhone)
     .single()
 
-  if (error || !profile) {
-    return { error: 'Invalid username or password' }
-  }
+  if (profile) {
+    // Compare PIN
+    const match = await bcrypt.compare(pin, profile.password_hash)
+    if (!match) {
+      return { error: 'Incorrect PIN' }
+    }
+    
+    await setSession(profile.id)
+    if (!profile.onboarding_completed) {
+      redirect('/onboarding')
+    }
+    redirect('/')
+  } else {
+    // Sign up
+    const passwordHash = await bcrypt.hash(pin, 10)
+    const { data: newProfile, error: createError } = await supabase.from('profiles').insert({
+      phone_number: safePhone,
+      password_hash: passwordHash,
+      onboarding_completed: false
+    }).select('id').single()
 
-  // Compare passwords
-  const match = await bcrypt.compare(password, profile.password_hash)
-  if (!match) {
-    return { error: 'Invalid username or password' }
-  }
+    if (createError || !newProfile) {
+      return { error: createError?.message || 'Failed to create account' }
+    }
 
-  // Login successful
-  await setSession(profile.id)
-
-  if (!profile.full_name) {
+    await setSession(newProfile.id)
     redirect('/onboarding')
   }
-
-  redirect('/')
-}
-
-export async function signup(formData: FormData) {
-  const username = formData.get('username') as string
-  const password = formData.get('password') as string
-  const supabase = createAdminClient()
-
-  const safeUsername = username.toLowerCase().trim()
-
-  // Check if username exists
-  const { data: existing } = await supabase.from('profiles').select('id').eq('username', safeUsername).single()
-  if (existing) {
-    return { error: 'Username already taken' }
-  }
-
-  // Hash password
-  const passwordHash = await bcrypt.hash(password, 10)
-
-  // Insert profile (since id is auto-generated)
-  const { data: profile, error } = await supabase.from('profiles').insert({
-    username: safeUsername,
-    password_hash: passwordHash,
-  }).select('id').single()
-
-  if (error || !profile) {
-    return { error: error?.message || 'Failed to create account' }
-  }
-
-  await setSession(profile.id)
-  redirect('/onboarding')
 }
 
 export async function completeOnboarding(formData: FormData) {
   const fullName = formData.get('fullName') as string
-  const age = parseInt(formData.get('age') as string, 10)
+  const altPhone = formData.get('altPhone') as string
   const address = formData.get('address') as string
-  const language = formData.get('language') as string
+  
   const supabase = createAdminClient()
-
   const userId = await getSession()
-  if (!userId) {
-    return { error: 'Not authenticated' }
-  }
+  if (!userId) return { error: 'Not authenticated' }
 
   // Update profile
   const { error: profileError } = await supabase.from('profiles').update({
     full_name: fullName,
-    age: age,
-    language_preference: language,
+    alternate_phone: altPhone,
+    onboarding_completed: true
   }).eq('id', userId)
 
   if (profileError) return { error: profileError.message }
 
-  // Insert address
+  await supabase.from('addresses').delete().eq('profile_id', userId)
+
   const { error: addressError } = await supabase.from('addresses').insert({
     profile_id: userId,
     address_text: address,
