@@ -32,12 +32,14 @@ export default async function RootLayout({
 
   return (
     <html lang={initialLanguage}>
-      <body className={`${hind.variable} ${martel.variable} font-sans antialiased bg-parchment text-ink`}>
-        <LanguageProvider initialLanguage={initialLanguage}>
-          <CartProvider>
-            {children}
-          </CartProvider>
-        </LanguageProvider>
+      <body className={`${hind.variable} ${martel.variable} font-sans antialiased bg-gray-50 text-ink`}>
+        <div className="max-w-md mx-auto min-h-screen bg-parchment shadow-xl sm:border-x sm:border-gray-200 relative flex flex-col">
+          <LanguageProvider initialLanguage={initialLanguage}>
+            <CartProvider>
+              {children}
+            </CartProvider>
+          </LanguageProvider>
+        </div>
       </body>
     </html>
   )
